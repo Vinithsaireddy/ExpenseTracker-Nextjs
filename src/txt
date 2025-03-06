@@ -1,0 +1,97 @@
+"use client";
+
+import { Home, Inbox, Search, Settings,Plus ,History,Info} from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation"; // For active route highlighting
+
+import {
+    Sidebar,
+    SidebarContent,
+    SidebarGroup,
+    SidebarGroupContent,
+    SidebarGroupLabel,
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
+} from "@/components/ui/sidebar";
+
+import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
+import { info } from "console";
+
+// import {
+//     SignInButton,
+//     SignUpButton,
+//     SignedIn,
+//     SignedOut,
+//     UserButton,
+// } from "@clerk/nextjs";
+
+// Menu items.
+const items = [
+    { title: "Home", url: "/", icon: Home },
+    { title: "About", url: "/about", icon: Info },
+    { title: "Add", url: "/add", icon: Plus },
+    { title: "History", url: "/history", icon: History },
+    { title: "Settings", icon: Settings },
+];
+
+export function AppSidebar() {
+    const pathname = usePathname(); // Get current route
+
+    return (
+        <Sidebar>
+            <SidebarContent>
+                <SidebarGroup>
+                    <SidebarGroupLabel>Application</SidebarGroupLabel>
+                    <SidebarGroupContent>
+                        <SidebarMenu>
+                            {items.map(({ title, url, icon: Icon }) => (
+                                <SidebarMenuItem key={title}>
+                                    <SidebarMenuButton asChild>
+                                        {title === "Settings" ? (
+                                            // Hover effect for "Settings"
+                                            <HoverCard>
+                                                <HoverCardTrigger asChild>
+                                                    <div
+                                                        className="flex items-center gap-2 px-3 py-2 rounded-md transition cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
+                                                    >
+                                                        <Icon />
+                                                        <span>{title}</span>
+                                                    </div>
+                                                </HoverCardTrigger>
+                                                <HoverCardContent className="p-2 bg-gray-100 dark:bg-gray-800 shadow-md rounded-md">
+                                                    <p className="text-sm text-gray-600 dark:text-gray-300">Theme Settings</p>
+                                                </HoverCardContent>
+                                            </HoverCard>
+                                        ) : (
+                                            // Normal Sidebar Items
+                                            <Link
+                                                href={url!} // Add "!" because we know normal items have a URL
+                                                className={`flex items-center gap-2 px-3 py-2 rounded-md transition ${pathname === url ? "bg-gray-200 dark:bg-gray-700" : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                                                    }`}
+                                            >
+                                                <Icon />
+                                                <span>{title}</span>
+                                            </Link>
+                                        )}
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            ))}
+                        </SidebarMenu>
+                    </SidebarGroupContent>
+                </SidebarGroup>
+
+                {/* Authentication Section */}
+                {/* <div className="mt-4 p-4">
+                    <SignedOut>
+                        <SignInButton />
+                        <SignUpButton />
+                    </SignedOut>
+                    <SignedIn>
+                        <UserButton />
+                    </SignedIn>
+                </div> */}
+            </SidebarContent>
+        </Sidebar>
+    );
+}
