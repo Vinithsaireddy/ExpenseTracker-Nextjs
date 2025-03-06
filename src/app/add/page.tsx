@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useUser } from "@clerk/nextjs"; // 🟢 Import Clerk hook
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -22,7 +21,6 @@ import {
 } from "@/components/ui/select";
 
 export default function AddTransaction() {
-  const { user } = useUser(); // 🟢 Get user object
 
   const [formData, setFormData] = useState({
     amount: "",
