@@ -5,13 +5,21 @@ import { DataTable } from "./DataTable";
 import { columns } from "./columns";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Transaction } from "./columns";
+
+// Define a proper Transaction type
+interface Transaction {
+  id: string;
+  type: "income" | "expense";
+  amount: number;
+  category: string;
+  description: string;
+  date: string;
+}
 
 export default function History() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [filterType, setFilterType] = useState<string>("all");
   const [filterDate, setFilterDate] = useState<string>("");
-  const [sortBy, setSortBy] = useState<string>("date");
 
   useEffect(() => {
     async function fetchTransactions() {
@@ -20,7 +28,9 @@ export default function History() {
         if (!response.ok) throw new Error("Failed to fetch transactions");
 
         const data = await response.json();
-        const formattedData: Transaction[] = data.map((txn: any) => ({
+        
+        // Ensure the correct type and format the data
+        const formattedData: Transaction[] = data.map((txn: { _id: string; type: string; amount: number; category: string; description: string; createdAt: string }) => ({
           id: txn._id,
           type: txn.type,
           amount: txn.amount,
@@ -32,6 +42,7 @@ export default function History() {
         setTransactions(formattedData);
       } catch (error) {
         console.error("Error fetching transactions:", error);
+        // Optionally display a user-friendly message, e.g., via a toast or alert
       }
     }
 
@@ -39,16 +50,10 @@ export default function History() {
   }, []);
 
   const filteredData = transactions
-    .filter((txn) => 
+    .filter((txn) =>
       (filterType === "all" || txn.type === filterType) &&
-      (filterDate === "" || txn.date.startsWith(filterDate))
-    )
-    .sort((a, b) => {
-      if (sortBy === "date") return new Date(b.date).getTime() - new Date(a.date).getTime();
-      if (sortBy === "income") return b.type === "income" ? -1 : 1;
-      if (sortBy === "expense") return b.type === "expense" ? -1 : 1;
-      return 0;
-    });
+      (filterDate === "" || txn.date.startsWith(filterDate)) // Ensure the date filter works correctly
+    );
 
   return (
     <div className="p-6 bg-white text-black rounded-lg shadow-lg border border-gray-300 w-3xl">
@@ -60,16 +65,28 @@ export default function History() {
           <SelectTrigger className="w-40 bg-blue-100 text-black border border-gray-400">
             <SelectValue placeholder="Filter by Type" />
           </SelectTrigger>
-          <SelectContent className="bg-white text-black border ">
+          <SelectContent className="bg-white text-black border">
             <SelectItem value="all">All</SelectItem>
             <SelectItem value="income">Income</SelectItem>
             <SelectItem value="expense">Expense</SelectItem>
           </SelectContent>
         </Select>
+
+        {/* Date filter */}
+        <Input
+          type="date"
+          value={filterDate}
+          onChange={(e) => setFilterDate(e.target.value)}
+          className="w-40 bg-blue-100 text-black border border-gray-400"
+        />
       </div>
 
       {/* Transactions Table */}
-      <DataTable columns={columns} data={filteredData} />
+      {filteredData.length === 0 ? (
+        <p className="text-center text-gray-500">No transactions found</p>
+      ) : (
+        <DataTable columns={columns} data={filteredData} />
+      )}
     </div>
   );
 }

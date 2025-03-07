@@ -6,7 +6,16 @@ if (!MONGODB_URI) {
   throw new Error("MONGODB_URI is not defined in environment variables");
 }
 
-let cached = (global as any).mongoose || { conn: null, promise: null };
+interface CachedConnection {
+  conn: mongoose.Connection | null;
+  promise: Promise<mongoose.Connection> | null;
+}
+
+declare global {
+  var mongoose: CachedConnection | undefined;
+}
+
+const cached: CachedConnection = global.mongoose || { conn: null, promise: null };
 
 export async function connectDB() {
   if (cached.conn) return cached.conn;
@@ -18,7 +27,7 @@ export async function connectDB() {
         useNewUrlParser: true,
         useUnifiedTopology: true,
       } as mongoose.ConnectOptions)
-      .then((mongoose) => mongoose);
+      .then((mongooseInstance) => mongooseInstance.connection);  // Resolve to the connection
   }
 
   cached.conn = await cached.promise;
