@@ -12,10 +12,12 @@ interface CachedConnection {
 }
 
 declare global {
-  var mongoose: CachedConnection | undefined;
+  interface Global {
+    mongoose: CachedConnection;
+  }
 }
 
-const cached: CachedConnection = global.mongoose || { conn: null, promise: null };
+const cached: CachedConnection = (globalThis as any).mongoose || { conn: null, promise: null };
 
 export async function connectDB() {
   if (cached.conn) return cached.conn;
