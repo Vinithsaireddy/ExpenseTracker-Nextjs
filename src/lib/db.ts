@@ -1,39 +1,35 @@
-import mongoose from "mongoose";
+import mongoose, { Connection, ConnectOptions } from "mongoose";
 
-const MONGODB_URI = process.env.MONGODB_URI || "";
+const MONGODB_URI: string = process.env.MONGODB_URI || "";
 
 if (!MONGODB_URI) {
   throw new Error("MONGODB_URI is not defined in environment variables");
 }
 
+// Define a cached connection type
 interface CachedConnection {
-  conn: mongoose.Connection | null;
-  promise: Promise<mongoose.Connection> | null;
+  conn: Connection | null;
+  promise: Promise<Connection> | null;
 }
 
-// Define global type properly
-declare global {
-  // Use "globalThis" for defining types globally
-  var mongoose: CachedConnection | undefined;
-}
+// Use globalThis properly with type-safe caching
+const globalWithMongoose = globalThis as typeof globalThis & { mongooseCache?: CachedConnection };
 
-// Use a proper global reference
-const cached: CachedConnection = globalThis.mongoose ?? { conn: null, promise: null };
+const cached: CachedConnection = globalWithMongoose.mongooseCache ?? { conn: null, promise: null };
 
-export async function connectDB() {
+export async function connectDB(): Promise<Connection> {
   if (cached.conn) return cached.conn;
 
   if (!cached.promise) {
     cached.promise = mongoose
       .connect(MONGODB_URI, {
         dbName: "expenseTracker",
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-      } as mongoose.ConnectOptions)
+      } as ConnectOptions) // Removed outdated options
       .then((mongooseInstance) => mongooseInstance.connection);
   }
 
   cached.conn = await cached.promise;
-  globalThis.mongoose = cached; // Store the connection globally
+  globalWithMongoose.mongooseCache = cached; // Store in global scope
+
   return cached.conn;
 }
