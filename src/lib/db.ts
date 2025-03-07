@@ -11,13 +11,14 @@ interface CachedConnection {
   promise: Promise<mongoose.Connection> | null;
 }
 
+// Define global type properly
 declare global {
-  interface Global {
-    mongoose: CachedConnection;
-  }
+  // Use "globalThis" for defining types globally
+  var mongoose: CachedConnection | undefined;
 }
 
-const cached: CachedConnection = (globalThis as any).mongoose || { conn: null, promise: null };
+// Use a proper global reference
+const cached: CachedConnection = globalThis.mongoose ?? { conn: null, promise: null };
 
 export async function connectDB() {
   if (cached.conn) return cached.conn;
@@ -29,9 +30,10 @@ export async function connectDB() {
         useNewUrlParser: true,
         useUnifiedTopology: true,
       } as mongoose.ConnectOptions)
-      .then((mongooseInstance) => mongooseInstance.connection);  // Resolve to the connection
+      .then((mongooseInstance) => mongooseInstance.connection);
   }
 
   cached.conn = await cached.promise;
+  globalThis.mongoose = cached; // Store the connection globally
   return cached.conn;
 }
