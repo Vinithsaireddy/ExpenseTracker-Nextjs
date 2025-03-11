@@ -17,16 +17,6 @@ import {
 } from "@/components/ui/sidebar";
 
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-    DropdownMenuSub,
-    DropdownMenuSubContent,
-    DropdownMenuSubTrigger,
-} from "@/components/ui/dropdown-menu";
-
-import {
     SignInButton,
     SignUpButton,
     SignedIn,
@@ -36,6 +26,7 @@ import {
 import { useUser } from "@clerk/nextjs";
 
 import { Button } from "@/components/ui/button";
+import { SetStateAction, useState } from "react";
 
 // Menu items (excluding settings)
 const items = [
@@ -47,10 +38,14 @@ const items = [
 
 export function AppSidebar() {
     const { user } = useUser();
-
-    
     const pathname = usePathname();
-    const { setTheme } = useTheme(); // Get current theme
+    const { setTheme, theme } = useTheme(); // Get current theme
+    const [showThemeOptions, setShowThemeOptions] = useState(false);
+
+    const handleThemeChange = (newTheme: SetStateAction<string>) => {
+        setTheme(newTheme);
+        setShowThemeOptions(false); // Automatically close after selection
+    };
 
     return (
         <Sidebar>
@@ -75,37 +70,39 @@ export function AppSidebar() {
                                 </SidebarMenuItem>
                             ))}
 
-                            {/* Settings with Theme Button Inside */}
+                            {/* Theme Toggle Section (Auto-close on selection) */}
                             <SidebarMenuItem>
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <SidebarMenuButton className="flex w-full items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition">
-                                            <Settings />
-                                            <span className="text-sm font-medium">Theme</span>
-                                        </SidebarMenuButton>
-                                    </DropdownMenuTrigger>
+                                <button
+                                    className="flex w-full items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                                    onClick={() => setShowThemeOptions(!showThemeOptions)}
+                                >
+                                    {theme === "dark" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+                                    <span className="text-sm font-medium">Theme</span>
+                                </button>
 
-                                    <DropdownMenuContent align="end">
-                                        <DropdownMenuSub>
-                                            <DropdownMenuSubTrigger className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition">
-                                                <Settings className="h-4 w-4" />
-                                                <span className="text-sm font-medium">Theme</span>
-                                            </DropdownMenuSubTrigger>
-
-                                            <DropdownMenuSubContent>
-                                                <DropdownMenuItem onClick={() => setTheme("light")}>
-                                                    <Sun className="h-4 w-4 mr-2" /> Light Theme
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => setTheme("dark")}>
-                                                    <Moon className="h-4 w-4 mr-2" /> Dark Theme
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => setTheme("system")}>
-                                                    <Settings className="h-4 w-4 mr-2" /> System Theme
-                                                </DropdownMenuItem>
-                                            </DropdownMenuSubContent>
-                                        </DropdownMenuSub>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
+                                {/* Show theme options when clicked */}
+                                {showThemeOptions && (
+                                    <div className="mt-2 flex flex-col gap-1 p-2 border rounded-md bg-gray-50 dark:bg-gray-900">
+                                        <button
+                                            className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+                                            onClick={() => handleThemeChange("light")}
+                                        >
+                                            <Sun className="h-4 w-4" /> Light
+                                        </button>
+                                        <button
+                                            className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+                                            onClick={() => handleThemeChange("dark")}
+                                        >
+                                            <Moon className="h-4 w-4" /> Dark
+                                        </button>
+                                        <button
+                                            className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+                                            onClick={() => handleThemeChange("system")}
+                                        >
+                                            <Settings className="h-4 w-4" /> System
+                                        </button>
+                                    </div>
+                                )}
                             </SidebarMenuItem>
 
                             {/* Authentication Section */}

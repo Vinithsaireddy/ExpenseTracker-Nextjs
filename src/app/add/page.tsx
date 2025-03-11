@@ -19,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import "./Card.css"
 
 export default function AddTransaction() {
 
@@ -63,7 +64,7 @@ export default function AddTransaction() {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen">
+    <div className="flex justify-center items-center min-h-screen Card-style">
       <Card className="w-[400px]">
         <CardHeader>
           <CardTitle>Add Transaction</CardTitle>

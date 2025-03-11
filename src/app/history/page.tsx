@@ -5,6 +5,7 @@ import { DataTable } from "./DataTable";
 import { columns } from "./columns";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import "../add/Card.css"
 
 // Define a proper Transaction type
 interface Transaction {
@@ -28,7 +29,7 @@ export default function History() {
         if (!response.ok) throw new Error("Failed to fetch transactions");
 
         const data = await response.json();
-        
+
         // Ensure the correct type and format the data
         const formattedData: Transaction[] = data.map((txn: { _id: string; type: string; amount: number; category: string; description: string; createdAt: string }) => ({
           id: txn._id,
@@ -36,7 +37,7 @@ export default function History() {
           amount: txn.amount,
           category: txn.category,
           description: txn.description,
-          date: new Date(txn.createdAt).toLocaleDateString(),
+          date: new Date(txn.createdAt).toISOString().split("T")[0],
         }));
 
         setTransactions(formattedData);
@@ -49,14 +50,16 @@ export default function History() {
     fetchTransactions();
   }, []);
 
-  const filteredData = transactions
-    .filter((txn) =>
+  const filteredData = transactions.filter((txn) => {
+    const txnDate = new Date(txn.date).toISOString().split("T")[0]; // Convert to YYYY-MM-DD
+    return (
       (filterType === "all" || txn.type === filterType) &&
-      (filterDate === "" || txn.date.startsWith(filterDate)) // Ensure the date filter works correctly
+      (filterDate === "" || txnDate === filterDate) // Correct date comparison
     );
+  });
 
   return (
-    <div className="p-6 bg-white text-black rounded-lg shadow-lg border border-gray-300 w-3xl">
+    <div className="p-6 bg-white text-black rounded-lg shadow-lg border border-gray-300 w-3xl Table-style">
       <h1 className="text-2xl font-bold mb-4 text-center">Transaction History</h1>
 
       {/* Filters */}
